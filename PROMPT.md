@@ -1,34 +1,89 @@
-# Codex Prompt: Website Screenshot Capture
+# Codex Prompt: Generate A Standalone Screenshot Tool
 
-Copy/paste this prompt into Codex when you want Codex to run this project for a target URL.
+Use this prompt when you want an agent to **build a new project like `screenshot-tool` from scratch**.
 
 ```text
-You are in the screenshot-tool project root.
+You are a coding agent. Build a standalone Node.js + pnpm project that captures website screenshots.
 
-Task:
-Capture full-page screenshots of this URL:
-<TARGET_URL>
+Goal:
+Create a reusable CLI tool project that can run with:
+1) one-time setup
+2) one-command capture by URL
 
-Requirements:
-1. Use this project's built-in command (do not create a new script).
-2. Ensure setup is complete before capture:
-   - run: pnpm run setup
-3. Run capture:
-   - pnpm run capture "<TARGET_URL>"
-4. Default output folder:
-   - ./screenshot-output
-5. Report:
-   - output file paths
-   - file sizes
-6. Keep capture exclusions active:
-   - .vsc-initialized (non-root nodes)
-   - .weglot_switcher.country-selector.default.closed.wg-drop
-7. Do not download website assets. Only generate screenshots.
+Project requirements:
+1. Tech stack:
+   - Node.js (ESM)
+   - pnpm
+   - Playwright (Chromium)
+2. Create these files:
+   - package.json
+   - capture-website-screenshots.mjs
+   - README.md
+   - .gitignore
+3. package.json scripts:
+   - `setup`: install dependencies and install Playwright Chromium runtime
+   - `capture`: run the screenshot script
+4. CLI behavior (`capture-website-screenshots.mjs`):
+   - command: `pnpm run capture "<url>"`
+   - optional args:
+     - `--output=./screenshot-output`
+     - `--scale=2` (range 1..4)
+     - `--exclude-class=<className>` (repeatable and comma-separated allowed)
+     - `--exclude-id=<idName>` (repeatable and comma-separated allowed)
+     - `--url-file=<path>` where path may be `.txt`, `.md`, `.doc`, or `.docx`
+     - `--crawl` to capture additional reachable URLs from each seed URL
+     - `--crawl-depth=<n>` (default 1)
+     - `--same-origin-only=true|false` (default true)
+     - `--no-same-origin-only` (alias to disable same-origin restriction)
+  - default URL fallback if URL missing
+  - users must be able to combine args in one run (example: URL file + multiple exclude classes/ids + crawl)
+5. Screenshot behavior:
+   - take **full document screenshots** (`fullPage: true`), not viewport-only
+   - generate 2 outputs per URL:
+     - desktop full document
+     - mobile full document (390x844, mobile context)
+   - default high-quality scale should be 2
+6. Exclusions during capture:
+   - always exclude non-root `.vsc-initialized`
+   - always exclude `.weglot_switcher.country-selector.default.closed.wg-drop`
+   - also apply user-provided class/id exclusions from CLI args
+7. Page preparation before capture:
+   - wait for page load
+   - scroll pass to trigger lazy/intersection content
+   - neutralize transitions/animations for deterministic output
+8. Output naming:
+   - `<page-key>-fullpage-document.png`
+   - `<page-key>-fullpage-mobile-document.png`
+9. README requirements:
+   - setup command
+   - capture command
+   - optional output/scale usage
+   - examples for:
+     - single URL
+     - URL file input
+     - user exclusion class/id args
+     - crawl mode
+    - examples
+10. Validation:
+   - run script syntax check
+   - run capture help command
+   - run one real capture test URL and report generated files/sizes
 
-Optional:
-- Higher resolution:
-  pnpm run capture "<TARGET_URL>" --scale=3
-- Custom output folder:
-  pnpm run capture "<TARGET_URL>" --output=./my-screenshots
+Constraints:
+- do not download page assets
+- screenshots only
+- keep implementation concise and production-usable
+- URL file parsing requirements:
+  - `.txt` / `.md`: parse line-by-line URLs
+  - `.docx`: parse text and extract URLs
+  - `.doc`: parse text and extract URLs (if environment cannot parse `.doc`, fail with clear actionable error)
+ - crawl safety requirements:
+  - dedupe URLs
+  - skip non-http(s)
+  - configurable max pages (default 50) to avoid runaway crawling
+- output metadata:
+  - print source URL and output file path/size for every generated screenshot
+
+Deliverable:
+- finished project files + short runbook summary
 ```
-
