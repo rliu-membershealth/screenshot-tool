@@ -4,12 +4,31 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
+/**
+ * Standalone website screenshot CLI.
+ *
+ * Behavior:
+ * - Captures two full-document screenshots for a URL:
+ *   1) desktop
+ *   2) mobile (390x844)
+ * - Applies deterministic capture preparation:
+ *   - scroll pass to reveal lazy/intersection content
+ *   - animation/transition neutralization
+ *   - explicit exclusion of unwanted overlay/extension nodes
+ * - Writes PNG files to `--output` (default: ./screenshot-output)
+ *
+ * Typical usage:
+ *   pnpm run capture "https://example.com"
+ *   pnpm run capture "https://example.com" --scale=3
+ */
 const DEFAULT_URL = "https://membershealth.ca/Discovery";
 const MOBILE_VIEWPORT_WIDTH = 390;
 const MOBILE_VIEWPORT_HEIGHT = 844;
 const DEFAULT_SCALE = 2;
+// UI overlays to hide for clean captures.
 const EXCLUDED_CAPTURE_SELECTOR =
   ".weglot_switcher.country-selector.default.closed.wg-drop, .weglot_switcher";
+// Exclude non-root nodes injected with this class (while keeping <html>/<body> intact).
 const EXCLUDED_VSC_SELECTOR = ".vsc-initialized:not(html):not(body)";
 
 /**
@@ -17,7 +36,15 @@ const EXCLUDED_VSC_SELECTOR = ".vsc-initialized:not(html):not(body)";
  */
 
 /**
- * Parse CLI args.
+ * Parse and validate CLI args.
+ *
+ * Supported flags:
+ * - --output=<dir>  output directory
+ * - --scale=<1..4>  Playwright deviceScaleFactor for sharper output
+ *
+ * Positional argument:
+ * - first non-flag token is treated as target URL
+ *
  * @returns {CliOptions}
  */
 const parseOptions = () => {
@@ -84,7 +111,11 @@ const parseOptions = () => {
 };
 
 /**
- * Build filename-safe page key from URL.
+ * Build a filename-safe key from URL path.
+ * Examples:
+ * - https://example.com/Discovery -> discovery
+ * - https://example.com/programs/surp -> surp
+ *
  * @param {string} targetUrl
  * @returns {string}
  */
@@ -100,6 +131,13 @@ const pageKeyFromUrl = (targetUrl) => {
 };
 
 /**
+ * Prepare page for deterministic full-document capture.
+ *
+ * Why this exists:
+ * - Some pages hide content until scroll/intersection.
+ * - Animated entry states (opacity/transform) can produce blank sections in static captures.
+ * - Certain overlays/extensions should not appear in output.
+ *
  * @param {import("playwright").Page} page
  * @returns {Promise<void>}
  */
@@ -108,6 +146,7 @@ const preparePage = async (page) => {
   await page.waitForLoadState("networkidle").catch(() => undefined);
   await page.waitForTimeout(1200);
 
+  // Perform a top-to-bottom scroll pass to reveal lazy/intersection content.
   await page.evaluate(async () => {
     const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     for (let i = 0; i < 80; i += 1) {
@@ -148,6 +187,7 @@ const preparePage = async (page) => {
       *,
       *::before,
       *::after {
+        /* Freeze animation/motion for reproducible screenshots. */
         transition-duration: 0s !important;
         animation-duration: 0s !important;
         animation-delay: 0s !important;
@@ -155,6 +195,7 @@ const preparePage = async (page) => {
     `,
   });
 
+  // Enforce exclusions in runtime DOM, even if site scripts re-toggle visibility.
   await page.evaluate((excludedSelector) => {
     // Keep root nodes visible while excluding non-root extension nodes.
     if (document.documentElement.classList.contains("vsc-initialized")) {
@@ -181,6 +222,8 @@ const preparePage = async (page) => {
  */
 
 /**
+ * Capture one full-document screenshot.
+ *
  * @param {import("playwright").Browser} browser
  * @param {{url: string, outputPath: string, contextOptions?: import("playwright").BrowserContextOptions}} input
  * @returns {Promise<CaptureResult>}
@@ -200,6 +243,14 @@ const captureFullPage = async (browser, input) => {
   }
 };
 
+/**
+ * CLI entrypoint:
+ * 1) Parse args
+ * 2) Ensure output directory exists
+ * 3) Launch Chromium
+ * 4) Capture desktop + mobile full-document screenshots
+ * 5) Print output paths and file sizes
+ */
 const run = async () => {
   const options = parseOptions();
   const pageKey = pageKeyFromUrl(options.targetUrl);
@@ -254,6 +305,7 @@ const run = async () => {
       url: options.targetUrl,
       outputPath: desktopOutputPath,
       contextOptions: {
+        // Higher default pixel density improves text and edge sharpness.
         deviceScaleFactor: options.scale,
       },
     });

@@ -9,6 +9,23 @@ only needs:
 brew install pnpm
 ```
 
+## Prompt For Codex
+
+Prompt file:
+- `PROMPT.md`
+
+What this prompt is:
+- the exact instruction template used to tell Codex how to run this project
+- includes required setup + capture commands
+- includes output/reporting expectations
+
+How to use prompt with Codex:
+1. Open Codex in this repository (`screenshot-tool`).
+2. Open `PROMPT.md`.
+3. Replace `<TARGET_URL>` with your page URL.
+4. Copy/paste the full prompt into Codex.
+5. Codex will run setup/capture and return output file paths + sizes.
+
 ## 1. Git Clone
 
 ```bash
