@@ -1,4 +1,4 @@
-# Standalone Website Screenshot Tool (No Codex Required)
+# Standalone Website Screenshot Tool
 
 This folder contains a standalone screenshot program.
 
@@ -9,12 +9,10 @@ only needs:
 brew install pnpm
 ```
 
-No Codex/agent is required.
-
 ## 1. Git Clone
 
 ```bash
-git clone <YOUR_GIT_REPO_URL> screenshot-tool
+git clone https://github.com/rliu-membershealth/screenshot-tool.git screenshot-tool
 cd screenshot-tool
 ```
 
