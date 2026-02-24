@@ -12,7 +12,7 @@ brew install pnpm
 ## 1. Git Clone
 
 ```bash
-git clone https://github.com/rliu-membershealth/screenshot-tool.git screenshot-tool
+git clone https://github.com/rliu-membershealth/screenshot-tool.git
 cd screenshot-tool
 ```
 
@@ -33,7 +33,7 @@ What setup does:
 ## 4. Capture Screenshot (One Command With URL)
 
 ```bash
-pnpm run capture "https://membershealth.ca/Discovery"
+pnpm run capture "https://example.com"
 ```
 
 This captures:
@@ -63,20 +63,20 @@ Then run the capture command again.
 Custom output folder:
 
 ```bash
-pnpm run capture "https://membershealth.ca/Discovery" --output=./my-screenshots
+pnpm run capture "https://example.com" --output=./my-screenshots
 ```
 
 Custom resolution scale (`1` to `4`):
 
 ```bash
-pnpm run capture "https://membershealth.ca/Discovery" --scale=3
+pnpm run capture "https://example.com" --scale=3
 ```
 
 ## 6. File Naming
 
 Examples:
-- `discovery-fullpage-document.png`
-- `discovery-fullpage-mobile-document.png`
+- `example-fullpage-document.png`
+- `example-fullpage-mobile-document.png`
 
 ## 7. Help
 
