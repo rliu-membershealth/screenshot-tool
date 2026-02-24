@@ -117,19 +117,30 @@ export const parseCliArguments = (argv) => {
       continue;
     }
 
-    if (arg === "--crawl") {
+    if (arg === "--crawl" || arg === "--loop") {
       options.crawl = true;
       index += 1;
       continue;
     }
 
-    if (arg === "--no-crawl") {
+    if (arg === "--no-crawl" || arg === "--no-loop") {
       options.crawl = false;
       index += 1;
       continue;
     }
 
     if (arg === "--same-origin-only") {
+      const maybeValue = argv[index + 1]?.trim().toLowerCase();
+      if (maybeValue === "true") {
+        options.sameOriginOnly = true;
+        index += 2;
+        continue;
+      }
+      if (maybeValue === "false") {
+        options.sameOriginOnly = false;
+        index += 2;
+        continue;
+      }
       options.sameOriginOnly = true;
       index += 1;
       continue;
@@ -173,11 +184,12 @@ export const parseCliArguments = (argv) => {
       continue;
     }
 
-    if (arg.startsWith("--crawl-depth")) {
-      const { value, nextIndex } = readValue(arg, index, "--crawl-depth");
+    if (arg.startsWith("--crawl-depth") || arg.startsWith("--loop-depth")) {
+      const flagName = arg.startsWith("--loop-depth") ? "--loop-depth" : "--crawl-depth";
+      const { value, nextIndex } = readValue(arg, index, flagName);
       const parsed = Number.parseInt(value, 10);
       if (!Number.isFinite(parsed) || parsed < 0) {
-        throw new Error(`Invalid --crawl-depth value: ${value}`);
+        throw new Error(`Invalid ${flagName} value: ${value}`);
       }
       options.crawlDepth = parsed;
       index = nextIndex;
@@ -267,10 +279,12 @@ const printHelp = () => {
       "Options:",
       "  --url-file <path>              Read URLs from .txt/.md/.doc/.docx",
       "  --crawl                        Crawl reachable pages from seed URLs",
+      "  --loop                         Alias for --crawl (follow links and capture each page)",
       "  --crawl-depth <n>              Crawl depth (default: 1)",
+      "  --loop-depth <n>               Alias for --crawl-depth",
       "  --max-pages <n>                Max URLs captured after crawl (default: 50)",
       "  --same-origin-only             Keep crawl inside seed origins (default)",
-      "  --same-origin-only=true|false  Explicit boolean variant",
+      "  --same-origin-only <true|false> Explicit boolean variant",
       "  --no-same-origin-only          Allow cross-origin crawl links",
       "  --exclude-class <name[,name]>  Hide class selectors during capture (repeatable)",
       "  --exclude-id <name[,name]>     Hide id selectors during capture (repeatable)",

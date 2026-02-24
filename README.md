@@ -79,43 +79,76 @@ Default exclusions:
 
 ## 5. Advanced Options
 
-Custom output folder:
+Argument:
+`--output <output-dir>`
+
+Example:
 
 ```bash
 pnpm run capture "https://example.com" --output=./my-screenshots
 ```
 
-Custom resolution scale (`1` to `4`):
+Argument:
+`--scale <scale-1-to-4>`
+
+Example:
 
 ```bash
 pnpm run capture "https://example.com" --scale=3
 ```
 
-Exclude extra classes/ids:
+Argument:
+`--exclude-class <class-name[,class-name...]>`
+`--exclude-id <id-name[,id-name...]>`
+
+Example:
 
 ```bash
 pnpm run capture "https://example.com" --exclude-class cookie-banner,chat-widget --exclude-id modal-root
 ```
 
-Capture URLs from a file (`.txt`, `.md`, `.doc`, `.docx`):
+Argument:
+`--url-file <path-to-file>`
+
+Example (`.txt`, `.md`, `.doc`, `.docx` supported):
 
 ```bash
 pnpm run capture --url-file ./targets.md
 ```
 
-Crawl reachable pages from the seed URL(s):
+Arguments:
+`--crawl --crawl-depth <depth> --max-pages <max-pages>`
+
+Example:
 
 ```bash
 pnpm run capture "https://example.com" --crawl --crawl-depth 2 --max-pages 30
 ```
 
-Cross-origin crawling (optional):
+Plain meaning:
+- Start with one URL.
+- Open links from that page.
+- Keep taking screenshots for each reachable page until depth/max-pages limits are reached.
+
+Alternative loop argument (same behavior):
+`--loop --loop-depth <depth> --max-pages <max-pages>`
+
+Example:
 
 ```bash
-pnpm run capture "https://example.com" --crawl --same-origin-only=false
+pnpm run capture "https://example.com" --loop --loop-depth 2 --max-pages 30
 ```
 
-You can combine options in one run:
+Argument:
+`--same-origin-only <true|false>`
+
+Example (cross-origin crawling):
+
+```bash
+pnpm run capture "https://example.com" --crawl --same-origin-only false
+```
+
+Combined arguments example:
 
 ```bash
 pnpm run capture --url-file ./targets.docx --exclude-class cookie-banner --exclude-id modal-root --crawl --crawl-depth 1

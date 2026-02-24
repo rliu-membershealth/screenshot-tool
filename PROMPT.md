@@ -32,16 +32,19 @@ Project requirements:
      - `--exclude-id=<idName>` (repeatable and comma-separated allowed)
      - `--url-file=<path>` where path may be `.txt`, `.md`, `.doc`, or `.docx`
      - `--crawl` to capture additional reachable URLs from each seed URL
+     - `--loop` as a plain-language alias of `--crawl`
      - `--crawl-depth=<n>` (default 1)
-     - `--same-origin-only=true|false` (default true)
+     - `--loop-depth=<n>` as an alias of `--crawl-depth`
+     - `--same-origin-only <true|false>` (default true)
      - `--no-same-origin-only` (alias to disable same-origin restriction)
   - default URL fallback if URL missing
   - users must be able to combine args in one run (example: URL file + multiple exclude classes/ids + crawl)
 5. Screenshot behavior:
    - take **full document screenshots** (`fullPage: true`), not viewport-only
+   - do not use fixed viewport-height capture mode; render lazily loaded content first and capture only after the page height stabilizes
    - generate 2 outputs per URL:
      - desktop full document
-     - mobile full document (390x844, mobile context)
+     - mobile full document (mobile emulation context, no fixed capture height requirement)
    - default high-quality scale should be 2
 6. Exclusions during capture:
    - always exclude non-root `.vsc-initialized`
@@ -49,7 +52,9 @@ Project requirements:
    - also apply user-provided class/id exclusions from CLI args
 7. Page preparation before capture:
    - wait for page load
-   - scroll pass to trigger lazy/intersection content
+   - aggressively trigger lazy/intersection content by scrolling until document height no longer grows
+   - promote lazy-loaded assets (`img`, `iframe`, lazy background attributes) before screenshot
+   - wait for fonts/images/network to settle before screenshot
    - neutralize transitions/animations for deterministic output
 8. Output naming:
    - `<page-key>-fullpage-document.png`
